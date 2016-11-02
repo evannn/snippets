@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html><head>
+  <script src="dist/jquery.min.js"></script>
+  <script src="dist/sockjs.min.js"></script>
+  <script src="dist/stomp.js"></script>
+  <style>
+      .box {
+          width: 90%;
+          float: left;
+          margin: 0 20px 0 20px;
+      }
+
+      .box div, .box input {
+          border: 1px solid;
+          -moz-border-radius: 4px;
+          border-radius: 4px;
+          width: 100%;
+          padding: 5px;
+          margin: 3px 0 10px 0;
+      }
+
+      .box div {
+          border-color: grey;
+          height: 300px;
+          overflow: auto;
+      }
+
+
+      code {
+          display: block;
+          -moz-border-radius: 2px;
+          border-radius: 2px;
+          border: 1px solid #eee;
+          margin-bottom: 5px;
+      }
+
+
+  </style>
+  <title>RabbitMQ Web STOMP Example</title>
+  <link href="dist/main.css" rel="stylesheet" type="text/css"/>
+</head><body lang="en">
+    <h1>RabbitMQ Web STOMP Example</h1>
+
+    <div class="box">
+      <h2>Received</h2>
+      <div id="output"></div>
+    </div>
+
+    <div class="box">
+      <h2>Logs</h2>
+      <div id="logger"></div>
+    </div>
+
+    <script>
+      // Stomp.js boilerplate
+      var mqhost = '127.0.0.1'
+      var exchanger = "situation"
+      var routing_key = "test"
+      var client = Stomp.client('ws://' + mqhost + ':15674/ws');
+
+      client.debug = function(d) {
+          $('#logger').append($("<code>").text(d));
+          $('#logger').scrollTop($('#logger').scrollTop() + 10000);
+      }
+
+      var on_connect = function(x) {
+          id = client.subscribe("/exchange/" + exchanger, function(d) {
+               p = (d.body === undefined) ? '' : JSON.stringify(d.body);
+               p = '[DEST:' + d.headers['destination'] + ']' + p;
+               $('#output').append($("<code>").text(p));
+               $('#output').scrollTop($('#output').scrollTop() + 10000);
+          });
+      };
+
+      var on_error =  function() {
+        console.log('error');
+      };
+
+      client.connect('guest', 'guest', on_connect, on_error, '/');
+
+    </script>
+</body></html>
